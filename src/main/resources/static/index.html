@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playwright Control Center</title>
+  
+  <link rel="stylesheet" href="/styles.css" />
+
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo-box">
+          <img src="/playwright-logo.svg" alt="logo" class="logo-img">
+        </div>
+        <div>
+          <h1>Playwright Control Center</h1>
+          <div class="subtitle">Track, run, and replay your test cases</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-meta">
+          <span id="status" class="status-pill status-right">Idle</span>
+          <span id="clock" class="chip clock">--:--</span>
+        </div>
+        <div class="nav-tabs">
+          <button class="nav-tab active" data-page="dashboard">Dashboard</button>
+          <button class="nav-tab" data-page="reports">Reports</button>
+          <button class="nav-tab" data-page="suites">Plan</button>
+          <button class="nav-tab" data-page="settings">Settings</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="main">
+      <div id="page-dashboard" class="page-section active">
+        <div class="layout">
+          <div class="col">
+            <div class="card card--settings">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <h2 style="margin:0;">Run Settings</h2>
+                  <div class="chip" id="currentRunLabel">No run</div>
+                </div>
+              </div>
+              <div class="grid grid-3">
+                <div>
+                  <label>Maven command</label>
+                  <input id="command" value="mvn test">
+                </div>
+                <div>
+                  <label>Environment</label>
+                  <input id="env" value="local">
+                </div>
+                <div>
+                  <label>Base URL</label>
+                  <input id="baseUrl" value="https://playwright.dev">
+                </div>
+                <div>
+                  <label>Browser</label>
+                  <select id="browser">
+                    <option value="chromium">Chromium</option>
+                    <option value="firefox">Firefox</option>
+                    <option value="webkit">WebKit</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Parallelism</label>
+                  <input id="parallelism" type="number" min="1" max="64" value="4">
+                </div>
+                <div>
+                  <label>Headless</label>
+                  <select id="headless">
+                    <option>true</option>
+                    <option>false</option>
+                  </select>
+                </div>
+          <div>
+            <label>Suite</label>
+            <select id="suiteSelect" style="flex:1;">
+              <option value="">-- no suite --</option>
+            </select>
+          </div>
+                <div>
+                  <label>Video capture</label>
+                  <select id="videoMode">
+                    <option value="fail">Fail only</option>
+                    <option value="all">All scenarios</option>
+                    <option value="off">None</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Working directory</label>
+                  <input id="workingDir" placeholder="Defaults to current project">
+                </div>
+              </div>
+              <div class="cmd-preview" id="cmdPreview">
+                <div class="cmd-preview__header" id="cmdPreviewToggle">
+                  <div class="cmd-preview__label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M8 9l-4 3 4 3M16 9l4 3-4 3" />
+                      <path d="M12 5v14" />
+                    </svg>
+                    Command preview
+                  </div>
+                  <svg class="cmd-preview__chevron" id="cmdPreviewArrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </div>
+                <div class="cmd-preview__body" id="cmdPreviewBody">
+                  <span id="commandPreview">mvn test</span>
+                </div>
+              </div>
+              <button class="primary run-cta" id="runBtn" type="button">Run</button>
+            </div>
+            <div class="card card--log">
+              <div class="log-header">
+                <h2>Console Log</h2>
+                <button class="ghost" id="clearLogBtn" type="button">Clear</button>
+              </div>
+              <pre id="log"></pre>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card card--pulse">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                <h2>Live Pulse</h2>
+                <div class="chip" id="runMeta">Waiting</div>
+              </div>
+              <div class="stat-row" style="margin-bottom:12px;">
+                <div class="stat"><div class="label">Total</div><div class="value" id="total">0</div></div>
+                <div class="stat"><div class="label">Passed</div><div class="value badge-pass" id="passed">0</div></div>
+                <div class="stat"><div class="label">Failed</div><div class="value badge-fail" id="failed">0</div></div>
+                <div class="stat"><div class="label">Running</div><div class="value" id="running">0</div></div>
+              </div>
+              <div class="grid grid-2" style="align-items:center;">
+                <div>
+                  <div class="donut" id="donut">
+                    <div class="donut-label" id="donutLabel">0%</div>
+                  </div>
+                </div>
+                <div>
+                  <div class="spark" id="spark"></div>
+                  <div style="margin-top:10px; color:var(--muted); font-size:12px;">Quick cadence</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card--stream">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+                <h2>Scenario Stream</h2>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <label class="toggle" style="margin:0;">
+                    <input type="checkbox" id="failFilter">
+                    <span class="slider"></span>
+                    <span class="toggle-label">Failures only</span>
+                  </label>
+                  <div class="chip" id="scenarioCountLabel">0 items</div>
+                </div>
+              </div>
+              <div id="scenarios"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-reports" class="page-section">
+        <div class="layout layout-single">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+              <div>
+                <h2 style="margin:0;">Reports</h2>
+                <small class="subtitle">Recent runs and scenario breakdown</small>
+              </div>
+              <button class="ghost" id="refreshReports" type="button">Refresh</button>
+            </div>
+            <div id="reportsSummary" class="stat-row reports-summary" style="margin-top:12px;"></div>
+            <div id="reportsSpark" class="spark reports-spark" aria-label="Runs trend"></div>
+            <div class="divider"></div>
+            <div id="reportsControls" class="pager">
+              <button class="ghost tiny-btn" id="reportsPrev" type="button">Prev</button>
+              <span id="reportsPageInfo" class="subtitle"></span>
+              <button class="ghost tiny-btn" id="reportsNext" type="button">Next</button>
+            </div>
+            <div id="reportsHistory">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-suites" class="page-section">
+        <div class="layout layout-single">
+          <div class="grid" style="gap:12px; grid-template-columns: 2fr 1fr;">
+            <div class="card" style="grid-column: span 1;">
+              <h2>Suites</h2>
+              <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                <div style="flex:1; min-width:240px;">
+                  <label>Suite name</label>
+                  <input id="suiteName" placeholder="My suite" />
+                </div>
+              </div>
+              <div style="max-height:320px; overflow:auto; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px;">
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;">
+                  <button class="ghost" id="suiteSelectAll" type="button">Select all</button>
+                  <button class="ghost" id="suiteClearAll" type="button">Clear</button>
+                </div>
+                <div id="scenarioList">Loading scenarios...</div>
+              </div>
+                <div class="modal-actions">
+                  <button class="ghost" id="suiteDelete" type="button">Delete</button>
+                  <button class="primary" id="suiteSave" type="button">Save</button>
+                </div>
+            </div>
+            <div class="card" style="grid-column: span 1;">
+              <h2>Saved Suites</h2>
+              <div id="suiteListPane">Loading...</div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:12px;">
+            <h2>Plans</h2>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+              <div style="flex:1; min-width:240px;">
+                <label>Suite to schedule</label>
+                <select id="scheduleSuiteSelect"></select>
+              </div>
+              <div style="flex:1; min-width:200px;">
+                <label>Schedule (cron)</label>
+                <input id="scheduleCron" placeholder="H 12 * * *" />
+              </div>
+            </div>
+            <div class="grid grid-2" style="margin-bottom:10px;">
+              <div>
+                <label>Command</label>
+                <input id="planCommand" value="mvn test">
+              </div>
+              <div>
+                <label>Environment</label>
+                <input id="planEnv" value="local">
+              </div>
+              <div>
+                <label>Base URL</label>
+                <input id="planBaseUrl" value="https://playwright.dev">
+              </div>
+              <div>
+                <label>Browser</label>
+                <select id="planBrowser">
+                  <option value="chromium">Chromium</option>
+                  <option value="firefox">Firefox</option>
+                  <option value="webkit">WebKit</option>
+                </select>
+              </div>
+              <div>
+                <label>Headless</label>
+                <select id="planHeadless">
+                  <option>true</option>
+                  <option>false</option>
+                </select>
+              </div>
+              <div>
+                <label>Parallelism</label>
+                <input id="planParallelism" type="number" min="1" max="64" value="4">
+              </div>
+              <div>
+                <label>Video mode</label>
+                <select id="planVideoMode">
+                  <option value="fail">Fail</option>
+                  <option value="all">All</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
+              <div>
+                <label>Working Dir</label>
+                <input id="planWorkingDir" placeholder="Defaults to current project">
+              </div>
+            </div>
+            <div class="modal-actions" style="justify-content: space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+              <label class="toggle" style="margin:0;">
+                <input type="checkbox" id="scheduleNotify">
+                <span class="slider"></span>
+                <span class="toggle-label">Send mail?</span>
+              </label>
+              <button class="primary" id="scheduleSave" type="button">Save Schedule</button>
+            </div>
+            <div id="scheduleList" class="plan-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="page-settings" class="page-section">
+        <div class="layout layout-single">
+          <div class="card">
+            <h2>Settings</h2>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+              <button class="ghost" id="resetDbBtn" type="button">Reset DB</button>
+            </div>
+            <div class="grid grid-3">
+              <div><label>Maven command</label><input id="defCommand" value="mvn test"></div>
+              <div><label>Environment</label><input id="defEnv" value="local"></div>
+              <div><label>Base URL</label><input id="defBaseUrl" value="https://playwright.dev"></div>
+              <div><label>Browser</label>
+                <select id="defBrowser">
+                  <option value="chromium">Chromium</option>
+                  <option value="firefox">Firefox</option>
+                  <option value="webkit">WebKit</option>
+                </select>
+              </div>
+              <div><label>Parallelism</label><input id="defParallelism" type="number" min="1" max="64" value="4"></div>
+              <div><label>Headless</label>
+                <select id="defHeadless">
+                  <option>true</option>
+                  <option>false</option>
+                </select>
+              </div>
+              <div><label>Video capture</label>
+                <select id="defVideoMode">
+                  <option value="fail">Fail only</option>
+                  <option value="all">All scenarios</option>
+                  <option value="off">None</option>
+                </select>
+              </div>
+              <div><label>Working directory</label><input id="defWorkingDir" placeholder="Defaults to current project"></div>
+            </div>
+            <div class="modal-actions">
+              <button class="ghost" id="defaultsLoadBtn" type="button">Load</button>
+              <button class="primary" id="defaultsSaveBtn" type="button">Save</button>
+            </div>
+          </div>
+          <div class="card">
+            <h2>AI Settings</h2>
+            <div class="grid grid-2">
+              <div>
+                <label>Provider</label>
+                <select id="aiProvider">
+                  <option value="gemini" selected>Gemini</option>
+                  <option value="openai">OpenAI</option>
+                </select>
+              </div>
+              <div>
+                <label>API Key</label>
+                <input id="aiApiKey" type="password" placeholder="Enter API key" />
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="primary" id="aiSaveBtn" type="button">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

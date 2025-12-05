@@ -1,0 +1,11 @@
+{
+  "workdir" : "",
+  "command" : "mvn test",
+  "env" : "",
+  "baseUrl" : "https://playwright.dev",
+  "browser" : "chromium",
+  "parallelism" : "4",
+  "headless" : "true",
+  "videoMode" : "off",
+  "workingDir" : ""
+}

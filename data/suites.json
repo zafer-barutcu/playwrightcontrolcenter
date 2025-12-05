@@ -1,0 +1,13 @@
+[ {
+  "name" : "smoke",
+  "scenarios" : [ "CI overview dashboard CI01", "Test reporters setup CI02", "Retry strategy guide CI03" ],
+  "tag" : "@smoke"
+}, {
+  "name" : "zafer",
+  "scenarios" : [ "CI overview dashboard CI01" ],
+  "tag" : "@zafer"
+}, {
+  "name" : "all",
+  "scenarios" : [ "CI overview dashboard CI01", "Test reporters setup CI02", "Retry strategy guide CI03", "Annotations quickstart CI04", "Auth hooks example CI05", "Java quickstart page LANG01", "Python quickstart page LANG02", ".NET quickstart page LANG03", "API class reference LANG04", "Trace viewer language doc LANG05", "Homepage hero renders NAV01", "Getting started checklist NAV02", "Why Playwright decision page NAV03", "Browsers compatibility page NAV04", "Test runners overview NAV05", "API class reference NAV06", "Test configuration guide NAV07", "Trace viewer walkthrough NAV08", "Playwright docs landing TOOL01", "Google Test Demo Scenarios TOOL02", "Trace viewer deep link TOOL03" ],
+  "tag" : "@all"
+} ]
